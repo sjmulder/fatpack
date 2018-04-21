@@ -1,0 +1,5 @@
+#ifndef NDEBUG
+1000 RCDATA "..\bin\Debug\Sample ARM.exe"
+1001 RCDATA "..\bin\Debug\Sample Win32.exe"
+1002 RCDATA "..\bin\Debug\Sample x64.exe"
+#endif

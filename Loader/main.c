@@ -1,61 +1,86 @@
 #include <windows.h>
 #include <tchar.h>
+#include <shlwapi.h>
+#include "../common/util.h"
 
-#define LEN(a)	(sizeof(a)/sizeof(*(a)))
+static BOOL
+tryrun(HINSTANCE instance, HANDLE resinfo, const TCHAR *exepath)
+{
+	HGLOBAL reshandle;
+	HANDLE exefile;
+	void *data;
+	DWORD datasz;
+	STARTUPINFO startup;
+	PROCESS_INFORMATION process;
+	BOOL ran;
 
-const WCHAR * const executables[] = {
-	_T("Sample ARM.exe"),
-	_T("Sample x64.exe"),
-	_T("Sample Win32.exe"),
-};
+	ZeroMemory(&startup, sizeof(startup));
+	startup.cb = sizeof(startup);
+
+	if (!(reshandle = LoadResource(instance, resinfo)))
+		err(_T("LoadResource()"));
+	if (!(data = LockResource(reshandle)))
+		err(_T("LockResource()"));
+	if (!(datasz = SizeofResource(instance, resinfo)))
+		err(_T("SizeofResource()"));
+
+	exefile = CreateFile(exepath, GENERIC_WRITE, 0,
+	    NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL |
+	    FILE_ATTRIBUTE_TEMPORARY, NULL);
+	if (exefile == INVALID_HANDLE_VALUE)
+		err(_T("CreateFile()"));
+	if (!(WriteFile(exefile, data, datasz, NULL, NULL)))
+		err(_T("WriteFile()"));
+
+	CloseHandle(exefile);
+
+	ran = CreateProcess(exepath, NULL, NULL, NULL, TRUE, 0, NULL,
+	    NULL, &startup, &process);
+	if (!ran && GetLastError() != ERROR_EXE_MACHINE_TYPE_MISMATCH)
+		err(_T("CreateProcess()"));
+
+	if (ran) {
+		WaitForSingleObject(process.hProcess, INFINITE);
+		CloseHandle(process.hProcess);
+		CloseHandle(process.hThread);
+	}
+
+	DeleteFile(exepath);
+	return ran;
+}
 
 int CALLBACK
 WinMain(HINSTANCE instance, HINSTANCE prev, LPSTR cmdline, int cmdshow)
 {
-	int i;
-	STARTUPINFO startup;
-	PROCESS_INFORMATION process;
-	BOOL ok;
-	DWORD dw;
-	DWORD err;
-	TCHAR *errstr;
-	TCHAR buf[4096];
-	
-	_putts(_T("Launcher ") _T(PLATFORM));
+	int id;
+	size_t sz;
+	TCHAR modulepath[MAX_PATH+1];
+	TCHAR tempdir[MAX_PATH+1];
+	TCHAR exepath[MAX_PATH+1];
+	HRSRC resinfo;
+
+	if (!(GetModuleFileName(instance, modulepath, LEN(modulepath))))
+		err(_T("GetModulePath()"));
+	if (!(GetTempPath(LEN(tempdir), tempdir)))
+		err(_T("GetTempPath()"));
+
+	sz = _sntprintf_s(exepath, LEN(exepath), _TRUNCATE, _T("%s\\%s"),
+	    tempdir, PathFindFileName(modulepath));
+	if (sz == -1)
+		err(_T("_sntprintf_s()"));
 
 	/* Prevent error message box when we try to launch an incompatible
 	   binary `*/
 	SetErrorMode(SEM_FAILCRITICALERRORS);
 
-	ZeroMemory(&startup, sizeof(startup));
-	startup.cb = sizeof(startup);
+	for (id = 1000; ; id++) {
+		resinfo = FindResource(instance, MAKEINTRESOURCE(id),
+		    RT_RCDATA);
+		if (!resinfo)
+			break;
 
-	for (i = 0; i < LEN(executables); i++) {
-		ok = CreateProcess(executables[i], NULL, NULL, NULL, TRUE, 0,
-		   NULL, NULL, &startup, &process);
-		if (ok) {
-			WaitForSingleObject(process.hProcess, INFINITE);
-			CloseHandle(process.hProcess);
-			CloseHandle(process.hThread);
+		if (tryrun(instance, resinfo, exepath))
 			return 0;
-		}
-
-#ifndef NDEBUG
-		err = GetLastError();
-		dw = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		    FORMAT_MESSAGE_FROM_SYSTEM, 0, err, 0, (LPTSTR)&errstr, 0,
-		    NULL);
-		if (dw) {
-			_sntprintf_s(buf, LEN(buf), _TRUNCATE,
-			    _T("Failed to start '%s': %s (0x%X)\n"),
-			    executables[i], errstr, err);
-			LocalFree(errstr);
-		} else
-			_sntprintf_s(buf, LEN(buf), _TRUNCATE,
-			    _T("Failed to start '%s': error 0x%X\n"),
-			    executables[i], err);
-		OutputDebugString(buf);
-#endif
 	}
 
 	MessageBox(NULL, _T("No suitable versions of this program are "
