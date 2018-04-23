@@ -8,6 +8,7 @@ tryrun(HINSTANCE instance, HANDLE resinfo, const TCHAR *exepath)
 {
 	HGLOBAL reshandle;
 	HANDLE exefile;
+	HANDLE exefilero;
 	void *data;
 	DWORD datasz;
 	STARTUPINFO startup;
@@ -24,13 +25,17 @@ tryrun(HINSTANCE instance, HANDLE resinfo, const TCHAR *exepath)
 	if (!(datasz = SizeofResource(instance, resinfo)))
 		err(_T("SizeofResource()"));
 
-	exefile = CreateFile(exepath, GENERIC_WRITE, 0,
+	exefile = CreateFile(exepath, GENERIC_WRITE, FILE_SHARE_READ,
 	    NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL |
 	    FILE_ATTRIBUTE_TEMPORARY, NULL);
 	if (exefile == INVALID_HANDLE_VALUE)
 		err(_T("CreateFile()"));
 	if (!(WriteFile(exefile, data, datasz, NULL, NULL)))
 		err(_T("WriteFile()"));
+
+	exefilero = CreateFile(exepath, GENERIC_READ, FILE_SHARE_READ,
+	    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL |
+	    FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, NULL);
 
 	CloseHandle(exefile);
 
@@ -45,7 +50,7 @@ tryrun(HINSTANCE instance, HANDLE resinfo, const TCHAR *exepath)
 		CloseHandle(process.hThread);
 	}
 
-	DeleteFile(exepath);
+	CloseHandle(exefilero);
 	return ran;
 }
 
