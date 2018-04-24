@@ -4,7 +4,7 @@
 #include "resource.h"
 
 static void
-addfileui(HWND dialog)
+addfile(HWND dialog)
 {
 	TCHAR path[4096];
 	TCHAR *name;
@@ -154,7 +154,7 @@ dialogproc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	case WM_COMMAND:
 		switch (wparam) {
 		case IDC_ADD:
-			addfileui(wnd);
+			addfile(wnd);
 			return TRUE;
 		case IDC_REMOVE:
 			removefile(wnd);
