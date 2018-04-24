@@ -40,8 +40,10 @@ addfile(HWND dialog)
 	size_t pathlen, namelen;
 	HWND listbox;
 
-	if (!(listbox = GetDlgItem(dialog, IDC_EXELIST)))
-		err(_T("GetDlgItem(IDC_EXELIST)"));
+	if (!(listbox = GetDlgItem(dialog, IDC_EXELIST))) {
+		warn(_T("Failed to get listbox handle"));
+		return;
+	}
 
 	path[0] = _T('\0');
 
@@ -87,7 +89,7 @@ removefile(HWND dialog)
 	LRESULT idx;
 
 	if (!(listbox = GetDlgItem(dialog, IDC_EXELIST))) {
-		warnx(_T("Failed to get listbox handle"));
+		warn(_T("Failed to get listbox handle"));
 		return;
 	}
 
