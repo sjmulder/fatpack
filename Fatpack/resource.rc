@@ -3,17 +3,17 @@
 
 IDR_STUB RCDATA LOADER_PATH
 
-IDD_FATPACK DIALOGEX 0,0,207,248
+IDD_FATPACK DIALOGEX 0,0,267,248
 STYLE DS_SETFONT | DS_MODALFRAME | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU
 CAPTION "Fatpack"
 FONT 9, "Segoe UI", 0, 0, 0x1
 BEGIN
-	LTEXT		"Add .exe files to pack here. The packed launcher will try them in the order listed.\r\n\r\nList the least compatible first, e.g.:\r\n1. ARM\r\n2. Intel 64-bit\r\n3. Intel 32-bit (Vista+)\r\n4. Intel 32-bit", IDC_STATIC, 6,6,192,71
-	LISTBOX		IDC_EXELIST, 6,78,138,138, WS_VSCROLL | WS_TABSTOP, WS_EX_CLIENTEDGE
-	PUSHBUTTON	"&Add...",	IDC_ADD,	150,78,50,14
-	PUSHBUTTON	"&Remove",	IDC_REMOVE,	150,96,50,14
-	PUSHBUTTON	"Move &up",	IDC_MOVEUP,	150,120,50,14
-	PUSHBUTTON	"Move &down",	IDC_MOVEDOWN,	150,138,50,14
-	DEFPUSHBUTTON	"&Pack...",	IDC_PACK	150,228,50,14
-	CONTROL		"", IDC_STATIC, "Static", SS_ETCHEDFRAME, 6,222,192,1
+	LTEXT		"Add .exe files to pack here. The packed launcher will try them in the order listed.\r\n\r\nList the least compatible first, e.g.:\r\n1. ARM\r\n2. Intel 64-bit\r\n3. Intel 32-bit (Vista+)\r\n4. Intel 32-bit", IDC_STATIC, 6,6,252,71
+	LISTBOX		IDC_EXELIST, 6,78,198,138, WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP | LBS_NOINTEGRALHEIGHT
+	PUSHBUTTON	"&Add...",	IDC_ADD,	210,78,50,14
+	PUSHBUTTON	"&Remove",	IDC_REMOVE,	210,96,50,14
+	PUSHBUTTON	"Move &up",	IDC_MOVEUP,	210,120,50,14
+	PUSHBUTTON	"Move &down",	IDC_MOVEDOWN,	210,138,50,14
+	DEFPUSHBUTTON	"&Pack...",	IDC_PACK	210,228,50,14
+	CONTROL		"", IDC_STATIC, "Static", SS_ETCHEDFRAME, 6,222,252,1
 END

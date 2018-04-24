@@ -59,7 +59,7 @@ removefile(HWND dialog)
 	LRESULT idx;
 
 	if (!(listbox = GetDlgItem(dialog, IDC_EXELIST)))
-		err(_T("Failed to get listbox handle")):
+		errx(_T("Failed to get listbox handle"));
 
 	idx = SendMessage(listbox, LB_GETCURSEL, 0, 0);
 	if (idx == LB_ERR)
@@ -67,7 +67,7 @@ removefile(HWND dialog)
 
 	idx = SendMessage(listbox, LB_DELETESTRING, (WPARAM)idx, 0);
 	if (idx == LB_ERR)
-		errx(_T("Failed to remove list box item."))
+		errx(_T("Failed to remove list box item."));
 }
 
 static void
