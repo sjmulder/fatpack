@@ -3,7 +3,7 @@
 #include "util.h"
 
 void
-err(const TCHAR *info)
+warn(const TCHAR *info)
 {
 	DWORD num;
 	DWORD dw;
@@ -23,12 +23,25 @@ err(const TCHAR *info)
 		    _T("%s:\n\nerror 0x%X\n"), info, num);
 	}
 
-	errx(buf);
+	warnx(buf);
+}
+
+void
+warnx(const TCHAR *message)
+{
+	MessageBox(NULL, message, _T(PROGNAME), MB_OK | MB_ICONEXCLAMATION);
+}
+
+void
+err(const TCHAR *info)
+{
+	warn(info);
+	ExitProcess(1);
 }
 
 void
 errx(const TCHAR *message)
 {
-	MessageBox(NULL, message, _T(PROGNAME), MB_OK | MB_ICONEXCLAMATION);
+	warnx(message);
 	ExitProcess(1);
 }

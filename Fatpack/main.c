@@ -58,16 +58,20 @@ removefile(HWND dialog)
 	HWND listbox;
 	LRESULT idx;
 
-	if (!(listbox = GetDlgItem(dialog, IDC_EXELIST)))
-		errx(_T("Failed to get listbox handle"));
+	if (!(listbox = GetDlgItem(dialog, IDC_EXELIST))) {
+		warnx(_T("Failed to get listbox handle"));
+		return;
+	}
 
 	idx = SendMessage(listbox, LB_GETCURSEL, 0, 0);
 	if (idx == LB_ERR)
 		return;
 
 	idx = SendMessage(listbox, LB_DELETESTRING, (WPARAM)idx, 0);
-	if (idx == LB_ERR)
-		errx(_T("Failed to remove list box item."));
+	if (idx == LB_ERR) {
+		warnx(_T("Failed to remove list box item."));
+		return;
+	}
 }
 
 static void
@@ -80,8 +84,10 @@ movefile(HWND dialog, int offset)
 	LRESULT res;
 	const TCHAR path[4096];
 
-	if (!(listbox = GetDlgItem(dialog, IDC_EXELIST)))
-		err(_T("GetDlgItem(IDC_EXELIST)"));
+	if (!(listbox = GetDlgItem(dialog, IDC_EXELIST))) {
+		warn(_T("Failed to get list box handle"));
+		return;
+	}
 
 	idx = SendMessage(listbox, LB_GETCURSEL, 0, 0);
 	if (idx == LB_ERR || idx + offset < 0)
@@ -89,31 +95,46 @@ movefile(HWND dialog, int offset)
 
 	if (offset > 0) {
 		count = SendMessage(listbox, LB_GETCOUNT, 0, 0);
-		if (count == LB_ERR)
-			errx(_T("Failed to get list box item count."));
+		if (count == LB_ERR) {
+			warnx(_T("Failed to get list box item count."));
+			return;
+		}
+
 		if (idx + offset >= count)
 			return;
 	}
 
 	pathlen = SendMessage(listbox, LB_GETTEXTLEN, (WPARAM)idx, 0);
-	if (pathlen == LB_ERR)
-		errx(_T("Failed to retrieve list box item text length."));
-	if (pathlen+1 >= LEN(path))
-		errx(_T("The list box item does not fit in the allocated ")
+	if (pathlen == LB_ERR) {
+		warnx(_T("Failed to retrieve list box item text length."));
+		return;
+	}
+
+	if (pathlen+1 >= LEN(path)) {
+		warnx(_T("The list box item does not fit in the allocated ")
 		    _T("buffer."));
+		return;
+	}
 
 	res = SendMessage(listbox, LB_GETTEXT, (WPARAM)idx, (LPARAM)path);
-	if (res == LB_ERR)
-		errx(_T("Failed to get list box entry text."));
+	if (res == LB_ERR) {
+		warnx(_T("Failed to get list box entry text."));
+		return;
+	}
 
 	res = SendMessage(listbox, LB_DELETESTRING, (WPARAM)idx, 0);
-	if (idx == LB_ERR)
-		errx(_T("The entry could not be removed from the list box."));
+	if (idx == LB_ERR) {
+		warnx(_T("The entry could not be removed from the list ")
+		    _T("box."));
+		return;
+	}
 
 	res = SendMessage(listbox, LB_INSERTSTRING, (WPARAM)(idx+offset),
 	    (LPARAM)path);
-	if (res == LB_ERR || res == LB_ERRSPACE)
-		errx(_T("The entry could not be added to the list box."));
+	if (res == LB_ERR || res == LB_ERRSPACE) {
+		warnx(_T("The entry could not be added to the list box."));
+		return;
+	}
 
 	SendMessage(listbox, LB_SETCURSEL, (WPARAM)(idx+offset), 0);
 }
@@ -161,7 +182,7 @@ WinMain(HINSTANCE instance, HINSTANCE prev, LPSTR cmdline, int cmdshow)
 	dialog = CreateDialog(instance, MAKEINTRESOURCE(IDD_FATPACK), NULL,
 	    dialogproc);
 	if (!dialog)
-		err(_T("CreateDialog"));
+		err(_T("Failed to create main window"));
 
 	ShowWindow(dialog, cmdshow);
 
