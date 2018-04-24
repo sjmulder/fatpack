@@ -15,9 +15,6 @@
     <ClCompile Include="main.c" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="resource.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\common\util.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
