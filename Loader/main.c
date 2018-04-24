@@ -88,8 +88,8 @@ WinMain(HINSTANCE instance, HINSTANCE prev, LPSTR cmdline, int cmdshow)
 			return 0;
 	}
 
-	MessageBox(NULL, _T("No suitable versions of this program are "
-	   "available for your system."), _T("Loader"),
+	MessageBox(NULL, _T("No suitable versions of this program are ")
+	   _T("available for your system."), _T("Loader"),
 	   MB_OK | MB_ICONEXCLAMATION);
 
 	return 1;
