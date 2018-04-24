@@ -23,6 +23,12 @@ err(const TCHAR *info)
 		    _T("%s:\n\nerror 0x%X\n"), info, num);
 	}
 
-	MessageBox(NULL, buf, _T("Loader"), MB_OK | MB_ICONEXCLAMATION);
+	errx(buf);
+}
+
+void
+errx(const TCHAR *message)
+{
+	MessageBox(NULL, message, _T("Loader"), MB_OK | MB_ICONEXCLAMATION);
 	ExitProcess(1);
 }
