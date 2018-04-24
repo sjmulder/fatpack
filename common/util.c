@@ -29,6 +29,6 @@ err(const TCHAR *info)
 void
 errx(const TCHAR *message)
 {
-	MessageBox(NULL, message, _T("Loader"), MB_OK | MB_ICONEXCLAMATION);
+	MessageBox(NULL, message, _T(PROGNAME), MB_OK | MB_ICONEXCLAMATION);
 	ExitProcess(1);
 }
