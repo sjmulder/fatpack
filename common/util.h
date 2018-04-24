@@ -2,7 +2,7 @@
 
 void warn(const TCHAR *info);
 void warnx(const TCHAR *message);
-void err(const TCHAR *info);
-void errx(const TCHAR *message);
+__declspec(noreturn) void err(const TCHAR *info);
+__declspec(noreturn) void errx(const TCHAR *message);
 
 BOOL makeusedefault(HWND window);

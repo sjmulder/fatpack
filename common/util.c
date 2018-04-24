@@ -34,14 +34,14 @@ warnx(const TCHAR *message)
 	MessageBox(NULL, message, _T(PROGNAME), MB_OK | MB_ICONEXCLAMATION);
 }
 
-void
+__declspec(noreturn) void
 err(const TCHAR *info)
 {
 	warn(info);
 	ExitProcess(1);
 }
 
-void
+__declspec(noreturn) void
 errx(const TCHAR *message)
 {
 	warnx(message);
