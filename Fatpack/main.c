@@ -3,6 +3,34 @@
 #include "../common/util.h"
 #include "resource.h"
 
+static BOOL
+getlbstring(HWND listbox, int idx, TCHAR *buf, size_t bufsz)
+{
+	LRESULT len;
+	LRESULT res;
+
+	len = SendMessage(listbox, LB_GETTEXTLEN, (WPARAM)idx, 0);
+	if (len == LB_ERR) {
+		warnx(_T("Failed to retrieve list box item text ")
+		    _T("length."));
+		return FALSE;
+	}
+
+	if ((size_t)(len + 1) >= bufsz) {
+		warnx(_T("The list box item does not fit in the ")
+		    _T("allocated buffer."));
+		return FALSE;
+	}
+
+	res = SendMessage(listbox, LB_GETTEXT, (WPARAM)idx, (LPARAM)buf);
+	if (res == LB_ERR) {
+		warnx(_T("Failed to get list box entry text."));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 static void
 addfile(HWND dialog)
 {
@@ -80,9 +108,8 @@ movefile(HWND dialog, int offset)
 	HWND listbox;
 	LRESULT idx;
 	LRESULT count;
-	LRESULT pathlen;
 	LRESULT res;
-	const TCHAR path[4096];
+	TCHAR path[4096];
 
 	if (!(listbox = GetDlgItem(dialog, IDC_EXELIST))) {
 		warn(_T("Failed to get list box handle"));
@@ -104,23 +131,8 @@ movefile(HWND dialog, int offset)
 			return;
 	}
 
-	pathlen = SendMessage(listbox, LB_GETTEXTLEN, (WPARAM)idx, 0);
-	if (pathlen == LB_ERR) {
-		warnx(_T("Failed to retrieve list box item text length."));
+	if (!getlbstring(listbox, (int)idx, path, LEN(path)))
 		return;
-	}
-
-	if (pathlen+1 >= LEN(path)) {
-		warnx(_T("The list box item does not fit in the allocated ")
-		    _T("buffer."));
-		return;
-	}
-
-	res = SendMessage(listbox, LB_GETTEXT, (WPARAM)idx, (LPARAM)path);
-	if (res == LB_ERR) {
-		warnx(_T("Failed to get list box entry text."));
-		return;
-	}
 
 	res = SendMessage(listbox, LB_DELETESTRING, (WPARAM)idx, 0);
 	if (idx == LB_ERR) {
@@ -155,14 +167,12 @@ pack(HWND dialog)
 	TCHAR tmppath[MAX_PATH+1];
 	HANDLE tmpfile;
 	HANDLE resupdate = NULL;
-	LRESULT srcpathlen;
 	TCHAR srcpath[4096];
 	HANDLE srcfile = NULL;
 	HANDLE srcfilemap = NULL;
 	HANDLE srcfileview = NULL;
 	DWORD srcfilesz;
 	int i;
-	LRESULT res;
 	BOOL ok;
 
 	tmppath[0] = '\0';
@@ -244,26 +254,8 @@ pack(HWND dialog)
 	}
 
 	for (i = 0; i < count; i++) {
-		srcpathlen = SendMessage(listbox, LB_GETTEXTLEN, (WPARAM)i,
-		    0);
-		if (srcpathlen == LB_ERR) {
-			warnx(_T("Failed to retrieve list box item text ")
-			    _T("length."));
+		if (!getlbstring(listbox, i, srcpath, LEN(srcpath)))
 			goto cleanup;
-		}
-
-		if (srcpathlen +1 >= LEN(srcpath)) {
-			warnx(_T("The list box item does not fit in the ")
-			    _T("allocated buffer."));
-			goto cleanup;
-		}
-
-		res = SendMessage(listbox, LB_GETTEXT, (WPARAM)i,
-		    (LPARAM)srcpath);
-		if (res == LB_ERR) {
-			warnx(_T("Failed to get list box entry text."));
-			goto cleanup;
-		}
 
 		srcfile = CreateFile(srcpath, GENERIC_READ, FILE_SHARE_READ,
 		    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
