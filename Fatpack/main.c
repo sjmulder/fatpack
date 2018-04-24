@@ -154,17 +154,18 @@ pack(HWND dialog)
 	TCHAR tmpdir[MAX_PATH+1];
 	TCHAR tmppath[MAX_PATH+1];
 	HANDLE tmpfile;
-	HANDLE resupdate;
+	HANDLE resupdate = NULL;
 	LRESULT srcpathlen;
 	TCHAR srcpath[4096];
-	HANDLE srcfile;
-	HANDLE srcfilemap;
-	HANDLE srcfileview;
+	HANDLE srcfile = NULL;
+	HANDLE srcfilemap = NULL;
+	HANDLE srcfileview = NULL;
 	DWORD srcfilesz;
 	int i;
 	LRESULT res;
 	BOOL ok;
 
+	tmppath[0] = '\0';
 	instance = GetModuleHandle(NULL);
 
 	if (!(listbox = GetDlgItem(dialog, IDC_EXELIST))) {
@@ -231,8 +232,7 @@ pack(HWND dialog)
 
 	if (!WriteFile(tmpfile, resdata, (DWORD)resdatasz, NULL, NULL)) {
 		warn(_T("Failed to write data to temporary file"));
-		DeleteFile(tmppath);
-		return;
+		goto cleanup;
 	}
 
 	CloseHandle(tmpfile);
@@ -240,8 +240,7 @@ pack(HWND dialog)
 	if (!(resupdate = BeginUpdateResource(tmppath, FALSE))) {
 		warn(_T("Failed to open the temporary file for resource ")
 		    _T("editing"));
-		DeleteFile(tmppath);
-		return;
+		goto cleanup;
 	}
 
 	for (i = 0; i < count; i++) {
@@ -250,43 +249,33 @@ pack(HWND dialog)
 		if (srcpathlen == LB_ERR) {
 			warnx(_T("Failed to retrieve list box item text ")
 			    _T("length."));
-			EndUpdateResource(resupdate, TRUE);
-			DeleteFile(tmppath);
-			return;
+			goto cleanup;
 		}
 
 		if (srcpathlen +1 >= LEN(srcpath)) {
 			warnx(_T("The list box item does not fit in the ")
 			    _T("allocated buffer."));
-			EndUpdateResource(resupdate, TRUE);
-			DeleteFile(tmppath);
-			return;
+			goto cleanup;
 		}
 
 		res = SendMessage(listbox, LB_GETTEXT, (WPARAM)i,
 		    (LPARAM)srcpath);
 		if (res == LB_ERR) {
 			warnx(_T("Failed to get list box entry text."));
-			EndUpdateResource(resupdate, TRUE);
-			DeleteFile(tmppath);
-			return;
+			goto cleanup;
 		}
 
 		srcfile = CreateFile(srcpath, GENERIC_READ, FILE_SHARE_READ,
 		    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (!srcfile) {
 			warn(_T("Failed to open input file for reading"));
-			EndUpdateResource(resupdate, TRUE);
-			DeleteFile(tmppath);
-			return;
+			goto cleanup;
 		}
 
 		srcfilesz = GetFileSize(srcfile, NULL);
 		if (srcfilesz == INVALID_FILE_SIZE) {
 			warn(_T("Failed to get input file size"));
-			EndUpdateResource(resupdate, TRUE);
-			DeleteFile(tmppath);
-			return;
+			goto cleanup;
 		}
 
 		srcfilemap = CreateFileMapping(srcfile, NULL, PAGE_READONLY,
@@ -294,10 +283,7 @@ pack(HWND dialog)
 		if (!srcfilemap) {
 			warn(_T("Failed to create memory mapping for input ")
 			    _T("file"));
-			CloseHandle(srcfile);
-			EndUpdateResource(resupdate, TRUE);
-			DeleteFile(tmppath);
-			return;
+			goto cleanup;
 		}
 
 		srcfileview = MapViewOfFile(srcfilemap, FILE_MAP_READ, 0, 0,
@@ -305,11 +291,7 @@ pack(HWND dialog)
 		if (!srcfileview) {
 			warn(_T("Failed to create memory mapping view of ")
 			    _T("input file"));
-			CloseHandle(srcfilemap);
-			CloseHandle(srcfile);
-			EndUpdateResource(resupdate, TRUE);
-			DeleteFile(tmppath);
-			return;
+			goto cleanup;
 		}
 
 		ok = UpdateResource(resupdate, RT_RCDATA,
@@ -317,25 +299,35 @@ pack(HWND dialog)
 		    SUBLANG_NEUTRAL), srcfileview, (DWORD)srcfilesz);
 		if (!ok) {
 			warn(_T("Failed to update resource in output file"));
-			UnmapViewOfFile(srcfileview);
-			CloseHandle(srcfilemap);
-			CloseHandle(srcfile);
-			EndUpdateResource(resupdate, TRUE);
-			DeleteFile(tmppath);
-			return;
+			goto cleanup;
 		}
 
 		UnmapViewOfFile(srcfileview);
 		CloseHandle(srcfilemap);
 		CloseHandle(srcfile);
+
+		srcfileview = NULL;
+		srcfilemap = NULL;
+		srcfile = NULL;
 	}
 
 	EndUpdateResource(resupdate, FALSE);
+	resupdate = NULL;
 
 	if (!CopyFile(tmppath, path, FALSE))
 		warn(_T("Failed to write output file"));
 
-	DeleteFile(tmppath);
+cleanup:
+	if (srcfileview)
+		UnmapViewOfFile(srcfileview);
+	if (srcfilemap)
+		CloseHandle(srcfilemap);
+	if (srcfile)
+		CloseHandle(srcfile);
+	if (resupdate)
+		EndUpdateResource(resupdate, TRUE);
+	if (tmppath[0])
+		DeleteFile(tmppath);
 }
 
 static INT_PTR CALLBACK
