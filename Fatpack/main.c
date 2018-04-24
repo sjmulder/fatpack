@@ -151,6 +151,100 @@ movefile(HWND dialog, int offset)
 	SendMessage(listbox, LB_SETCURSEL, (WPARAM)(idx+offset), 0);
 }
 
+static BOOL
+packinit(const TCHAR *path)
+{
+	HINSTANCE instance;
+	HANDLE resinfo;
+	HGLOBAL reshandle;
+	void *resdata;
+	size_t resdatasz;
+	HANDLE file;
+
+	instance = GetModuleHandle(NULL);
+
+	resinfo = FindResource(instance, MAKEINTRESOURCE(IDR_LOADER),
+	    RT_RCDATA);
+	if (!resinfo ||
+	    !(reshandle = LoadResource(instance, resinfo)) ||
+	    !(resdata = LockResource(reshandle)) ||
+	    !(resdatasz = SizeofResource(instance, resinfo))) {
+		warn(_T("Failed to load embbed launcher resource"));
+		return FALSE;
+	}
+
+	file = CreateFile(path, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
+	    FILE_ATTRIBUTE_TEMPORARY, NULL);
+	if (!file) {
+		warn(_T("Failed to open temporary file for writing"));
+		return FALSE;
+	}
+
+	if (!WriteFile(file, resdata, (DWORD)resdatasz, NULL, NULL)) {
+		warn(_T("Failed to write data to temporary file"));
+		CloseHandle(file);
+		return FALSE;
+	}
+
+	CloseHandle(file);
+	return TRUE;
+}
+
+static BOOL
+packadd(HANDLE resupdate, int i, const TCHAR *path)
+{
+	HANDLE file;
+	HANDLE mapping;
+	HANDLE view;
+	DWORD sz;
+	BOOL ok;
+
+	file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL,
+	    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (!file) {
+		warn(_T("Failed to open input file for reading"));
+		return FALSE;
+	}
+
+	sz = GetFileSize(file, NULL);
+	if (sz == INVALID_FILE_SIZE) {
+		warn(_T("Failed to get input file size"));
+		CloseHandle(file);
+		return FALSE;
+	}
+
+	mapping = CreateFileMapping(file, NULL, PAGE_READONLY, 0, (DWORD)sz,
+	    NULL);
+	if (!mapping) {
+		warn(_T("Failed to create memory mapping for input file"));
+		CloseHandle(file);
+		return FALSE;
+	}
+
+	view = MapViewOfFile(mapping, FILE_MAP_READ, 0, 0, (DWORD)sz);
+	if (!view) {
+		warn(_T("Failed to create mapping view of input file"));
+		CloseHandle(mapping);
+		CloseHandle(file);
+		return FALSE;
+	}
+
+	ok = UpdateResource(resupdate, RT_RCDATA, MAKEINTRESOURCE(1000+i),
+	    MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL), view, (DWORD)sz);
+	if (!ok) {
+		warn(_T("Failed to update resource in output file"));
+		UnmapViewOfFile(view);
+		CloseHandle(mapping);
+		CloseHandle(file);
+		return FALSE;
+	}
+
+	UnmapViewOfFile(view);
+	CloseHandle(mapping);
+	CloseHandle(file);
+	return TRUE;
+}
+
 static void
 pack(HWND dialog)
 {
@@ -159,21 +253,11 @@ pack(HWND dialog)
 	LRESULT count;
 	OPENFILENAME ofn;
 	TCHAR path[4096];
-	HANDLE resinfo;
-	HGLOBAL reshandle;
-	void *resdata;
-	size_t resdatasz;
 	TCHAR tmpdir[MAX_PATH+1];
 	TCHAR tmppath[MAX_PATH+1];
-	HANDLE tmpfile;
 	HANDLE resupdate = NULL;
 	TCHAR srcpath[4096];
-	HANDLE srcfile = NULL;
-	HANDLE srcfilemap = NULL;
-	HANDLE srcfileview = NULL;
-	DWORD srcfilesz;
 	int i;
-	BOOL ok;
 
 	tmppath[0] = '\0';
 	instance = GetModuleHandle(NULL);
@@ -213,16 +297,6 @@ pack(HWND dialog)
 	if (!GetSaveFileName(&ofn))
 		return;
 
-	resinfo = FindResource(instance, MAKEINTRESOURCE(IDR_LOADER),
-	    RT_RCDATA);
-	if (!resinfo ||
-	    !(reshandle = LoadResource(instance, resinfo)) ||
-	    !(resdata = LockResource(reshandle)) ||
-	    !(resdatasz = SizeofResource(instance, resinfo))) {
-		warn(_T("Failed to load embbed launcher resource"));
-		return;
-	}
-
 	if (!GetTempPath(LEN(tmpdir), tmpdir)) {
 		warn(_T("Failed to get temporary directory path"));
 		return;
@@ -233,19 +307,8 @@ pack(HWND dialog)
 		return;
 	}
 
-	tmpfile = CreateFile(tmppath, GENERIC_WRITE, 0, NULL, OPEN_EXISTING,
-	    FILE_ATTRIBUTE_TEMPORARY, NULL);
-	if (!tmpfile) {
-		warn(_T("Failed to open temporary file for writing"));
+	if (!packinit(tmppath))
 		return;
-	}
-
-	if (!WriteFile(tmpfile, resdata, (DWORD)resdatasz, NULL, NULL)) {
-		warn(_T("Failed to write data to temporary file"));
-		goto cleanup;
-	}
-
-	CloseHandle(tmpfile);
 
 	if (!(resupdate = BeginUpdateResource(tmppath, FALSE))) {
 		warn(_T("Failed to open the temporary file for resource ")
@@ -256,51 +319,8 @@ pack(HWND dialog)
 	for (i = 0; i < count; i++) {
 		if (!getlbstring(listbox, i, srcpath, LEN(srcpath)))
 			goto cleanup;
-
-		srcfile = CreateFile(srcpath, GENERIC_READ, FILE_SHARE_READ,
-		    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (!srcfile) {
-			warn(_T("Failed to open input file for reading"));
+		if (!packadd(resupdate, i, srcpath))
 			goto cleanup;
-		}
-
-		srcfilesz = GetFileSize(srcfile, NULL);
-		if (srcfilesz == INVALID_FILE_SIZE) {
-			warn(_T("Failed to get input file size"));
-			goto cleanup;
-		}
-
-		srcfilemap = CreateFileMapping(srcfile, NULL, PAGE_READONLY,
-		    0, (DWORD)srcfilesz, NULL);
-		if (!srcfilemap) {
-			warn(_T("Failed to create memory mapping for input ")
-			    _T("file"));
-			goto cleanup;
-		}
-
-		srcfileview = MapViewOfFile(srcfilemap, FILE_MAP_READ, 0, 0,
-		    (DWORD)srcfilesz);
-		if (!srcfileview) {
-			warn(_T("Failed to create memory mapping view of ")
-			    _T("input file"));
-			goto cleanup;
-		}
-
-		ok = UpdateResource(resupdate, RT_RCDATA,
-		    MAKEINTRESOURCE(1000+i), MAKELANGID(LANG_NEUTRAL,
-		    SUBLANG_NEUTRAL), srcfileview, (DWORD)srcfilesz);
-		if (!ok) {
-			warn(_T("Failed to update resource in output file"));
-			goto cleanup;
-		}
-
-		UnmapViewOfFile(srcfileview);
-		CloseHandle(srcfilemap);
-		CloseHandle(srcfile);
-
-		srcfileview = NULL;
-		srcfilemap = NULL;
-		srcfile = NULL;
 	}
 
 	EndUpdateResource(resupdate, FALSE);
@@ -310,12 +330,6 @@ pack(HWND dialog)
 		warn(_T("Failed to write output file"));
 
 cleanup:
-	if (srcfileview)
-		UnmapViewOfFile(srcfileview);
-	if (srcfilemap)
-		CloseHandle(srcfilemap);
-	if (srcfile)
-		CloseHandle(srcfile);
 	if (resupdate)
 		EndUpdateResource(resupdate, TRUE);
 	if (tmppath[0])
