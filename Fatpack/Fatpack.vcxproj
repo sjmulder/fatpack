@@ -160,7 +160,7 @@
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'" </AdditionalManifestDependencies>
     </Link>
     <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <ResourceCompile>
       <PreprocessorDefinitions>LOADER_PATH="$(SolutionDir)bin\$(Configuration)\Loader.exe";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -180,7 +180,7 @@
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'" </AdditionalManifestDependencies>
     </Link>
     <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <ResourceCompile>
       <PreprocessorDefinitions>LOADER_PATH="$(SolutionDir)bin\$(Configuration)\Loader.exe";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -200,7 +200,7 @@
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'" </AdditionalManifestDependencies>
     </Link>
     <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <ResourceCompile>
       <PreprocessorDefinitions>LOADER_PATH="$(SolutionDir)bin\$(Configuration)\Loader.exe";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -224,7 +224,7 @@
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'" </AdditionalManifestDependencies>
     </Link>
     <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <ResourceCompile>
       <PreprocessorDefinitions>LOADER_PATH="$(SolutionDir)bin\$(Configuration)\Loader.exe";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -248,7 +248,7 @@
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'" </AdditionalManifestDependencies>
     </Link>
     <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <ResourceCompile>
       <PreprocessorDefinitions>LOADER_PATH="$(SolutionDir)bin\$(Configuration)\Loader.exe";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -272,7 +272,7 @@
       <AdditionalManifestDependencies>"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'" </AdditionalManifestDependencies>
     </Link>
     <Manifest>
-      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
     </Manifest>
     <ResourceCompile>
       <PreprocessorDefinitions>LOADER_PATH="$(SolutionDir)bin\$(Configuration)\Loader.exe";%(PreprocessorDefinitions)</PreprocessorDefinitions>
