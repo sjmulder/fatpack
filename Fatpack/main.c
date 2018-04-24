@@ -386,6 +386,9 @@ WinMain(HINSTANCE instance, HINSTANCE prev, LPSTR cmdline, int cmdshow)
 	if (!dialog)
 		err(_T("Failed to create main window"));
 
+	if (!makeusedefault(dialog))
+		err(_T("Failed to adjust window position"));
+
 	ShowWindow(dialog, cmdshow);
 
 	while (ret = GetMessage(&msg, NULL, 0, 0) > 0) {

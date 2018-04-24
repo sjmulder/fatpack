@@ -2,6 +2,8 @@
 #include <tchar.h>
 #include "util.h"
 
+#define DUMMYCLASSNAME	_T("Dummy")
+
 void
 warn(const TCHAR *info)
 {
@@ -44,4 +46,46 @@ errx(const TCHAR *message)
 {
 	warnx(message);
 	ExitProcess(1);
+}
+
+BOOL
+makeusedefault(HWND window)
+{
+	static int registered;
+
+	HINSTANCE instance;
+	WNDCLASS wc;
+	RECT rect, tempwndrect;
+	HWND tempwnd;
+	BOOL ok;
+
+	instance = GetModuleHandle(NULL);
+
+	if (!registered) {
+		ZeroMemory(&wc, sizeof(wc));
+		wc.lpfnWndProc = DefWindowProc;
+		wc.hInstance = instance;
+		wc.lpszClassName = DUMMYCLASSNAME;
+
+		if (!RegisterClass(&wc))
+			return FALSE;
+	}
+
+	if (!GetWindowRect(window, &rect))
+		return FALSE;
+
+	tempwnd = CreateWindow(DUMMYCLASSNAME, _T(""), WS_OVERLAPPEDWINDOW,
+	    CW_USEDEFAULT, CW_USEDEFAULT, rect.right - rect.left,
+	    rect.bottom - rect.top, NULL, NULL, instance, 0);
+	if (!tempwnd)
+		return FALSE;
+
+	if (!GetWindowRect(tempwnd, &tempwndrect))
+		return FALSE;
+
+	ok = SetWindowPos(window, NULL, tempwndrect.left, tempwndrect.top,
+	    rect.right, rect.bottom, SWP_NOZORDER | SWP_NOACTIVATE);
+
+	ok = DestroyWindow(tempwnd) && ok;
+	return ok;
 }
