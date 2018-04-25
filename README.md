@@ -105,7 +105,9 @@ Some ideas:
 
  - Have Fatpack copy version information from one of the embedded binaries
    into the packed binary so it correctly reflects the product name, version,
-   auther, and so on.
+   author, and so on.
+ - Build the loader as a freestanding, position-independent executable so
+   it runs even on Win32s in Windows 3.11.
  - Embed DOS versions in the DOS loader stub.
  - Embed appx (UWP) packages for Windows 10.
 
