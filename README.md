@@ -6,12 +6,15 @@ Build multi-architecture 'fat' binaries for Windows.
 
 ## What does it do
 
-Fatpack combines Windows programs for multiple architectures or Windows
+_Fatpack_ combines Windows programs for multiple architectures or Windows
 versions into a single executable that runs on:
 
  - 32-bit Intel (XP and up)
  - 64-bit Intel (XP and up)
  - 64-bit ARM (10 and up)
+
+To see it in action, download Fatpack from the releases page. It is a fat
+binary for 32-bit Intel, 64-bit Intel, and ARM (untested).
 
 ## Why
 
@@ -37,7 +40,7 @@ packing, it extracts it and uses _UpdateResource_ to embed the executables.
 
  1. Download a release from the _Releases_ page on GitHub, or download the
     and compile the source.
- 2. Launch _latpack_.
+ 2. Launch _Flatpack_.
  3. Click the _Add_ button to add your binaries. Then use _Move up_ and
     _Move down_ to put them in the best order (see _Packing order_ below)
  4. Click _Pack_, name the fat binary, and click _Save_.
