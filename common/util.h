@@ -1,3 +1,5 @@
+/* Copyright (c) 2018, Sijmen J. Mulder. See LICENSE.md. */
+
 #define LEN(a) (sizeof(a)/sizeof(*(a)))
 
 void warn(const TCHAR *info);

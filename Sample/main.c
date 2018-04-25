@@ -1,3 +1,5 @@
+/* Copyright (c) 2018, Sijmen J. Mulder. See LICENSE.md. */
+
 #include <windows.h>
 #include <tchar.h>
 
