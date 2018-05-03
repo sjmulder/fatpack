@@ -62,7 +62,7 @@ For good results, put the least compatible binaries first. Some rules of
 thumb:
 
  1. ARM before Intel (32-bit Intel binaries would launch emulated on ARM).
- 2. 32-bit before 64-bit.
+ 2. 64-bit before 32-bit.
  3. Executables requiring more recent Windows versions before those requiring
     older Windows versions (e.g. Windows 10-only before XP+).
 
