@@ -25,7 +25,7 @@ place.
 
 ## How does it work
 
-_Fatback_ embeds the executables as resources in a 32-bit Intel loader stub.
+_Fatpack_ embeds the executables as resources in a 32-bit Intel loader stub.
 32-bit Intel binaries are supported on 64-bit Intel through Windows on Windows
 64, and on 64-bit ARM through emulation.
 
