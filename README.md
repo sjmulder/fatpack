@@ -40,7 +40,7 @@ packing, it extracts it and uses _UpdateResource_ to embed the executables.
 
  1. Download a release from the _Releases_ page on GitHub, or download the
     and compile the source.
- 2. Launch _Flatpack_.
+ 2. Launch _Fatpack_.
  3. Click the _Add_ button to add your binaries. Then use _Move up_ and
     _Move down_ to put them in the best order (see _Packing order_ below)
  4. Click _Pack_, name the fat binary, and click _Save_.
